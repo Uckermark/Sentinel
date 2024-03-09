@@ -1,8 +1,5 @@
 include $(THEOS)/makefiles/common.mk
 
-export TARGET = iphone:clang:11.2:11.0
-export ARCHS = arm64 arm64e
-
 BUNDLE_NAME = SentinelCC
 SentinelCC_BUNDLE_EXTENSION = bundle
 SentinelCC_FILES = SentinelCC.m

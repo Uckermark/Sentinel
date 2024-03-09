@@ -1,6 +1,6 @@
 
 INSTALL_TARGET_PROCESSES = SpringBoard
-export ARCHS = arm64 arm64e
+export ARCHS = arm64 # arm64e
 export TARGET=iphone:clang:latest:15.0
 export GO_EASY_ON_ME = 1
 

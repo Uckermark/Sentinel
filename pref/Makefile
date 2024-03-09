@@ -1,12 +1,7 @@
 include $(THEOS)/makefiles/common.mk
 
-
-ARCHS = arm64 arm64e
-
-
-
 BUNDLE_NAME = SentinelPref
-SentinelPref_FILES = SentRootListController.m SentRootListController.m
+SentinelPref_FILES = SentRootListController.m
 SentinelPref_INSTALL_PATH = /Library/PreferenceBundles
 SentinelPref_FRAMEWORKS = UIKit
 

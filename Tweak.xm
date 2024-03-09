@@ -1,6 +1,8 @@
-#import "MediaRemote.h"
+//#import "MediaRemote.h"
 #import "NSTask.h"
 #import <Cephei/HBPreferences.h>
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 
 #define StartSentinel @"com.megadev.sentinel/StartSentinel"
 
@@ -58,7 +60,6 @@ BOOL stopmusic;
 
 
 static BOOL DNDEnabled;
-static BOOL DNDEnabledTemp;
 static DNDModeAssertionService *assertionService;
 
 
@@ -228,7 +229,7 @@ BOOL sentineletoggled = NO;
     NSTimeInterval twohours = [today timeIntervalSinceDate:firstLaunchDate];
     
     if ( twohours > 300 ) {
-        [def setValue:NO forKey:@"didSaveModeActivate"];
+        [def setValue:@(NO) forKey:@"didSaveModeActivate"];
 	}
     
     if( batLeft < [shutdownpercent intValue] || batLeft == [shutdownpercent intValue]){
@@ -284,7 +285,8 @@ void Sentinel() {
     [[objc_getClass("_CDBatterySaver") batterySaver] setPowerMode:1 error:nil];
 
     if(!stopmusic){
-    	MRMediaRemoteSendCommand(kMRPause, nil);
+    	NSLog(@"[Sentinel] Stop music unimplemented");
+        //MRMediaRemoteSendCommand(kMRPause, nil);
     }
 
     [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
@@ -306,7 +308,7 @@ void Sentinel() {
 %hook DNDState
 
 -(BOOL)isActive {
-  //save the DND state.
+    //save the DND state.
 	DNDEnabled = %orig;
 	return DNDEnabled;
 }
@@ -356,16 +358,12 @@ int pressed = 0;
                 return %orig;
 		    }
 	    }
-	    int type = arg1.allPresses.allObjects[0].type;
-	    int force = arg1.allPresses.allObjects[0].force;
-	} else {
-		return %orig;
 	}
+	return %orig;
 }
 
 
 - (void)applicationDidFinishLaunching:(id)arg1 {
-    BOOL restoreAfterSave = [[def objectForKey:@"didSaveModeActivate"]boolValue];
     BOOL shouldrestore = [[def objectForKey:@"shouldrestore"]boolValue];
     BOOL lpmAfterSave = [[def objectForKey:@"isPowerModeActive"]boolValue];
     BOOL airplaneafterSave = [[def objectForKey:@"isAirplaneActive"]boolValue];
@@ -373,7 +371,7 @@ int pressed = 0;
 	%orig;
 
     if(shouldrestore){
-        [def setValue:NO forKey:@"shouldrestore"];
+        [def setValue:@(NO) forKey:@"shouldrestore"];
 
         if(!wasDNDon){
 	        disableDND();
