@@ -83,13 +83,6 @@
 			<key>PostNotification</key>
 			<string>com.megadev.sentinel</string>
 		</dict>
-	
-		<dict>
-			<key>cell</key>
-			<string>PSGroupCell</string>
-			<key>label</key>
-			<string>Keep music playing in Sentinel mode.</string>
-		</dict>
 
 		<dict>
 			<key>cell</key>
