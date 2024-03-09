@@ -1,4 +1,3 @@
-//#import "MediaRemote.h"
 #import <Cephei/HBPreferences.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
@@ -37,7 +36,6 @@ NSUserDefaults *def = [[NSUserDefaults alloc] initWithSuiteName:@"com.megadev.se
 @end
 
 BOOL spoofpercent;
-BOOL stopmusic;
 
 @class DNDModeAssertionLifetime;
 
@@ -283,11 +281,6 @@ void Sentinel() {
     [(SpringBoard *)[%c(SpringBoard) sharedApplication] _updateRingerState:0 withVisuals:NO updatePreferenceRegister:NO];
     [[objc_getClass("_CDBatterySaver") batterySaver] setPowerMode:1 error:nil];
 
-    if(!stopmusic){
-    	NSLog(@"[Sentinel] Stop music unimplemented");
-        //MRMediaRemoteSendCommand(kMRPause, nil);
-    }
-
     [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
     [[UIDevice currentDevice] proximityState];
 
@@ -388,7 +381,6 @@ int pressed = 0;
     pfs = [[HBPreferences alloc] initWithIdentifier:@"com.megadev.sentinel"];
 
     [pfs registerBool:&enable default:YES forKey:@"enabled"];
-    [pfs registerBool:&stopmusic default:NO forKey:@"stopmusic"];
     [pfs registerBool:&spoofpercent default:NO forKey:@"spoofpercent"];
     [pfs registerObject:&shutdownpercent default:@"3.0" forKey:@"shutdownpercent"];
 
