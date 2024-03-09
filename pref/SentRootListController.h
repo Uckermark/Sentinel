@@ -6,7 +6,6 @@
 #import <AVKit/AVKit.h>
 #import <spawn.h>
 #import <UIKit/UIKit.h>
-#import "NSTask.h"
 
 
 @interface SentinelPref : HBRootListController {

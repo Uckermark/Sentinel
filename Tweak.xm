@@ -1,8 +1,8 @@
 //#import "MediaRemote.h"
-#import "NSTask.h"
 #import <Cephei/HBPreferences.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <spawn.h>
 
 #define StartSentinel @"com.megadev.sentinel/StartSentinel"
 
@@ -207,10 +207,9 @@ BOOL sentineletoggled = NO;
 
     if ([[%c(SBUIController) sharedInstance] isOnAC]) {
         if(sentineletoggled){
-		    NSTask *t = [[NSTask alloc] init];
-	        [t setLaunchPath:@"/usr/bin/killall"];
-	        [t setArguments:[NSArray arrayWithObjects:@"backboardd", nil]];
-	        [t launch];
+		    pid_t pid;
+            const char *argv[] = {"/usr/bin/killall", "backboardd", NULL};
+            posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)argv, NULL);
 
 	        sentineletoggled = NO;
 
@@ -298,10 +297,9 @@ void Sentinel() {
     [[%c(SBAirplaneModeController) sharedInstance] setInAirplaneMode:YES];
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0  * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		[(SpringBoard *)[%c(SpringBoard) sharedApplication] _simulateLockButtonPress];
-        NSTask *task = [[NSTask alloc] init];
-        [task setLaunchPath:@"/usr/bin/SentinelRunner"];
-        [task setArguments:@[ @""]];
-        [task launch];
+        pid_t pid;
+        const char *argv[] = {"/usr/bin/SentinelRunner", "", NULL};
+        posix_spawn(&pid, "/usr/bin/SentinelRunner", NULL, NULL, (char *const *)argv, NULL);
 	});
 }
 
@@ -327,10 +325,9 @@ void Sentinel() {
 
 			[(SpringBoard *)[%c(SpringBoard) sharedApplication] _simulateLockButtonPress];
 
-            NSTask *task = [[NSTask alloc] init];
-            [task setLaunchPath:@"/usr/bin/SentinelRunner"];
-            [task setArguments:@[ @""]];    
-            [task launch];
+            pid_t pid;
+            const char *argv[] = {"/usr/bin/SentinelRunner", "", NULL};
+            posix_spawn(&pid, "/usr/bin/SentinelRunner", NULL, NULL, (char *const *)argv, NULL);
         });
 	}
 }
@@ -348,10 +345,9 @@ int pressed = 0;
 		    if (press.type == 102 && press.force == 1) {
 		        pressed += 1;
 	            if(pressed == 3){
-	                NSTask *t = [[NSTask alloc] init];
-	                [t setLaunchPath:@"/usr/bin/killall"];
-	                [t setArguments:[NSArray arrayWithObjects:@"backboardd", nil]];
-	                [t launch];
+	                pid_t pid;
+                    const char *argv[] = {"/usr/bin/killall", "backboardd", NULL};
+                    posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)argv, NULL);
 	                sentineletoggled = NO;
                 }
 		    } else {
