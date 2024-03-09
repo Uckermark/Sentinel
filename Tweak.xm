@@ -34,17 +34,13 @@ static void disableDND() {
 %hook _UIStatusBarStringView
 
 - (void)setText:(id)arg1{
-    if(spoofpercent) {
-	    if([arg1 rangeOfString:[NSString stringWithFormat:@"%%"]].location != NSNotFound) {
-            UIDevice *myDevice = [UIDevice currentDevice];
-            [myDevice setBatteryMonitoringEnabled:YES];
-            double batLeft = (float)[myDevice batteryLevel] * 100;
-            int spoofedpercent = batLeft - [shutdownpercent intValue] + 1;
-            NSString *batteryleftstring = [NSString stringWithFormat:@"%i%%",spoofedpercent];
-            %orig(batteryleftstring);
-	    } else {
-		    %orig;
-	    }
+    if(spoofpercent && [arg1 rangeOfString:[NSString stringWithFormat:@"%%"]].location != NSNotFound) {
+        UIDevice *myDevice = [UIDevice currentDevice];
+        [myDevice setBatteryMonitoringEnabled:YES];
+        double batLeft = (float)[myDevice batteryLevel] * 100;
+        int spoofedpercent = batLeft - [shutdownpercent intValue] + 1;
+        NSString *batteryleftstring = [NSString stringWithFormat:@"%i%%",spoofedpercent];
+        %orig(batteryleftstring);
     } else {
 	    %orig;
     }
@@ -60,7 +56,6 @@ BOOL sentineletoggled = NO;
 
 -(void)setFrame:(CGRect)arg1{
 	  rootwindow = (UIWindow *)self;
-
 	  return %orig;
 }
 
@@ -72,7 +67,7 @@ BOOL sentineletoggled = NO;
 %hook SBUIController
 
 - (void)ACPowerChanged{
-	if(!sentineletoggled){
+	if (!sentineletoggled) {
 		%orig;
 	}
 }
@@ -87,16 +82,12 @@ BOOL sentineletoggled = NO;
 
     double batLeft = (float)[myDevice batteryLevel] * 100;
 
-    if ([[%c(SBUIController) sharedInstance] isOnAC]) {
-        if(sentineletoggled){
-		    pid_t pid;
-            const char *argv[] = {ROOT_PATH("/usr/bin/killall"), "backboardd", NULL};
-            posix_spawn(&pid, ROOT_PATH("/usr/bin/killall"), NULL, NULL, (char *const *)argv, NULL);
-
-	        sentineletoggled = NO;
-
-	        [def synchronize];
-        }
+    if (sentineletoggled && [[%c(SBUIController) sharedInstance] isOnAC]) {
+		pid_t pid;
+        const char *argv[] = {ROOT_PATH("/usr/bin/killall"), "backboardd", NULL};
+        posix_spawn(&pid, ROOT_PATH("/usr/bin/killall"), NULL, NULL, (char *const *)argv, NULL);
+	    sentineletoggled = NO;
+	    [def synchronize];
 	}
 
     NSString *kFirstLaunchDateKey = @"firstLaunchDate";
@@ -109,11 +100,11 @@ BOOL sentineletoggled = NO;
     NSDate *today = [NSDate date];
     NSTimeInterval twohours = [today timeIntervalSinceDate:firstLaunchDate];
     
-    if ( twohours > 300 ) {
+    if (twohours > 300) {
         [def setValue:@(NO) forKey:@"didSaveModeActivate"];
 	}
     
-    if( batLeft < [shutdownpercent intValue] || batLeft == [shutdownpercent intValue]){
+    if (batLeft < [shutdownpercent intValue] || batLeft == [shutdownpercent intValue]) {
         BOOL triggeredyes = [[def objectForKey:@"didSaveModeActivate"]boolValue];
 
         if(!triggeredyes) {
@@ -181,7 +172,6 @@ void Sentinel() {
 %hook DNDState
 
 -(BOOL)isActive {
-    //save the DND state.
 	DNDEnabled = %orig;
 	return DNDEnabled;
 }
@@ -193,7 +183,7 @@ void Sentinel() {
 -(void)tapToWakeDidRecognize:(id)arg1{
     %orig;
 
-	if(sentineletoggled){
+	if (sentineletoggled) {
 		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0  * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 
 			[(SpringBoard *)[%c(SpringBoard) sharedApplication] _simulateLockButtonPress];
@@ -212,20 +202,18 @@ void Sentinel() {
 
 int pressed = 0;
 
--(_Bool)_handlePhysicalButtonEvent:(UIPressesEvent *)arg1 {
-	if(sentineletoggled){
+- (_Bool)_handlePhysicalButtonEvent:(UIPressesEvent *)arg1 {
+    if(sentineletoggled){
 	    for(UIPress* press in arg1.allPresses.allObjects) {
 		    if (press.type == 102 && press.force == 1) {
-		        pressed += 1;
-	            if(pressed == 3){
-	                pid_t pid;
+                pressed += 1;
+                if (pressed == 3) {
+                    pid_t pid;
                     const char *argv[] = {ROOT_PATH("/usr/bin/killall"), "backboardd", NULL};
                     posix_spawn(&pid, ROOT_PATH("/usr/bin/killall"), NULL, NULL, (char *const *)argv, NULL);
-	                sentineletoggled = NO;
+                    sentineletoggled = NO;
                 }
-		    } else {
-                return %orig;
-		    }
+            }
 	    }
 	}
 	return %orig;
@@ -239,10 +227,10 @@ int pressed = 0;
     BOOL wasDNDon = [[def objectForKey:@"isDNDActive"]boolValue];
 	%orig;
 
-    if(shouldrestore){
+    if (shouldrestore) {
         [def setValue:@(NO) forKey:@"shouldrestore"];
 
-        if(!wasDNDon){
+        if (!wasDNDon) {
 	        disableDND();
         }
         [[objc_getClass("_CDBatterySaver") batterySaver] setPowerMode:lpmAfterSave error:nil];
@@ -268,8 +256,7 @@ int pressed = 0;
     	%init(tweak);
     }
 
-    if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:@"com.apple.springboard"])
-    {
+    if ([[NSBundle mainBundle].bundleIdentifier isEqualToString:@"com.apple.springboard"]) {
         //load ReplayKitModule bundle so we can hook it
         NSBundle* moduleBundle = [NSBundle bundleWithPath:@"/System/Library/ControlCenter/Bundles/ReplayKitModule.bundle"];
         if (!moduleBundle.loaded)
