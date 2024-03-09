@@ -2,6 +2,7 @@
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
 #import <spawn.h>
+#import <rootless.h>
 
 #define StartSentinel @"com.megadev.sentinel/StartSentinel"
 
@@ -206,8 +207,8 @@ BOOL sentineletoggled = NO;
     if ([[%c(SBUIController) sharedInstance] isOnAC]) {
         if(sentineletoggled){
 		    pid_t pid;
-            const char *argv[] = {"/usr/bin/killall", "backboardd", NULL};
-            posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)argv, NULL);
+            const char *argv[] = {ROOT_PATH("/usr/bin/killall"), "backboardd", NULL};
+            posix_spawn(&pid, ROOT_PATH("/usr/bin/killall"), NULL, NULL, (char *const *)argv, NULL);
 
 	        sentineletoggled = NO;
 
@@ -244,7 +245,7 @@ void Sentinel() {
     UIView *window1 = [[UIView alloc] initWithFrame:CGRectMake(0,0,[[UIScreen mainScreen] bounds].size.width*3,[[UIScreen mainScreen] bounds].size.height*3)];
     window1.backgroundColor = [UIColor blackColor];
 
-    UIImage *image = [[UIImage alloc] initWithContentsOfFile:@"/Library/Application Support/Sentinel/logo.png"];
+    UIImage *image = [[UIImage alloc] initWithContentsOfFile:ROOT_PATH_NS(@"/Library/Application Support/Sentinel/logo.png")];
     UIImageView *sentinellogo = [[UIImageView alloc] initWithImage:image];
     sentinellogo.alpha = 0.8;
     sentinellogo.frame = CGRectMake(0,0,50,50);
@@ -291,8 +292,8 @@ void Sentinel() {
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0  * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 		[(SpringBoard *)[%c(SpringBoard) sharedApplication] _simulateLockButtonPress];
         pid_t pid;
-        const char *argv[] = {"/usr/bin/SentinelRunner", "", NULL};
-        posix_spawn(&pid, "/usr/bin/SentinelRunner", NULL, NULL, (char *const *)argv, NULL);
+        const char *argv[] = {ROOT_PATH("/usr/bin/SentinelRunner"), "", NULL};
+        posix_spawn(&pid, ROOT_PATH("/usr/bin/SentinelRunner"), NULL, NULL, (char *const *)argv, NULL);
 	});
 }
 
@@ -319,8 +320,8 @@ void Sentinel() {
 			[(SpringBoard *)[%c(SpringBoard) sharedApplication] _simulateLockButtonPress];
 
             pid_t pid;
-            const char *argv[] = {"/usr/bin/SentinelRunner", "", NULL};
-            posix_spawn(&pid, "/usr/bin/SentinelRunner", NULL, NULL, (char *const *)argv, NULL);
+            const char *argv[] = {ROOT_PATH("/usr/bin/SentinelRunner"), "", NULL};
+            posix_spawn(&pid, ROOT_PATH("/usr/bin/SentinelRunner"), NULL, NULL, (char *const *)argv, NULL);
         });
 	}
 }
@@ -339,8 +340,8 @@ int pressed = 0;
 		        pressed += 1;
 	            if(pressed == 3){
 	                pid_t pid;
-                    const char *argv[] = {"/usr/bin/killall", "backboardd", NULL};
-                    posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)argv, NULL);
+                    const char *argv[] = {ROOT_PATH("/usr/bin/killall"), "backboardd", NULL};
+                    posix_spawn(&pid, ROOT_PATH("/usr/bin/killall"), NULL, NULL, (char *const *)argv, NULL);
 	                sentineletoggled = NO;
                 }
 		    } else {

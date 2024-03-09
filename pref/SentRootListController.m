@@ -33,8 +33,8 @@
 
 - (void)respring:(id)sender {
     pid_t pid;
-    const char *argv[] = {"/usr/bin/killall", "backboardd", NULL};
-    posix_spawn(&pid, "/usr/bin/killall", NULL, NULL, (char *const *)argv, NULL);
+    const char *argv[] = {ROOT_PATH("/usr/bin/killall"), "backboardd", NULL};
+    posix_spawn(&pid, ROOT_PATH("/usr/bin/killall"), NULL, NULL, (char *const *)argv, NULL);
 }
 
 -(void)triggersent{
