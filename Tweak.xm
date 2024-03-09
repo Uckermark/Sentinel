@@ -1,8 +1,4 @@
-#import <Cephei/HBPreferences.h>
-#import <Foundation/Foundation.h>
-#import <UIKit/UIKit.h>
-#import <spawn.h>
-#import <rootless.h>
+#include "Tweak.h"
 
 #define StartSentinel @"com.megadev.sentinel/StartSentinel"
 
@@ -10,129 +6,31 @@ HBPreferences *pfs;
 NSString *shutdownpercent = @"3.0";
 UILabel *statusbarvalue = nil;
 BOOL enable;
-
-UIWindow *rootwindow = nil;
-
-@interface UIRootSceneWindow
-
-- (void)setFrame:(CGRect)arg1 ;
-
-@end
-
-NSUserDefaults *def = [[NSUserDefaults alloc] initWithSuiteName:@"com.megadev.sentinel"];
-
-@interface SBScreenWakeAnimationController
-
-+ (id)sharedInstance;
-- (void)setScreenWakeTemporarilyDisabled:(BOOL)arg1 forReason:(id)arg2;
-
-@end
-
-	
-@interface SpringBoard
-
-- (void)_simulateLockButtonPress;
-- (void)_updateRingerState:(int)arg1 withVisuals:(BOOL)arg2 updatePreferenceRegister:(BOOL)arg3 ;
-
-@end
-
 BOOL spoofpercent;
-
-@class DNDModeAssertionLifetime;
-
-@interface DNDModeAssertionDetails : NSObject
-
-+ (id)userRequestedAssertionDetailsWithIdentifier:(NSString *)identifier modeIdentifier:(NSString *)modeIdentifier lifetime:(DNDModeAssertionLifetime *)lifetime;
-- (BOOL)invalidateAllActiveModeAssertionsWithError:(NSError **)error;
-- (id)takeModeAssertionWithDetails:(DNDModeAssertionDetails *)assertionDetails error:(NSError **)error;
-
-@end
-
-@interface DNDModeAssertionService : NSObject
-
-+ (id)serviceForClientIdentifier:(NSString *)clientIdentifier;
-- (BOOL)invalidateAllActiveModeAssertionsWithError:(NSError **)error;
-- (id)takeModeAssertionWithDetails:(DNDModeAssertionDetails *)assertionDetails error:(NSError **)error;
-
-@end
-
-
 
 static BOOL DNDEnabled;
 static DNDModeAssertionService *assertionService;
 
+UIWindow *rootwindow = nil;
 
-@interface _CDBatterySaver
+NSUserDefaults *def = [[NSUserDefaults alloc] initWithSuiteName:@"com.megadev.sentinel"];
 
-- (id)batterySaver;
-- (long long)getPowerMode;
-- (BOOL)setPowerMode:(long long)arg1 error:(id *)arg2;
+static void enableDND() {
+    if (!assertionService) {
+        assertionService = (DNDModeAssertionService *)[%c(DNDModeAssertionService) serviceForClientIdentifier:@"com.apple.donotdisturb.control-center.module"];
+    }
+    DNDModeAssertionDetails *newAssertion = [%c(DNDModeAssertionDetails) userRequestedAssertionDetailsWithIdentifier:@"com.apple.control-center.manual-toggle" modeIdentifier:@"com.apple.donotdisturb.mode.default" lifetime:nil];
+    [assertionService takeModeAssertionWithDetails:newAssertion error:NULL];
+}
 
-@end
+static void disableDND() {
+    if (!assertionService) {
+        assertionService = (DNDModeAssertionService *)[%c(DNDModeAssertionService) serviceForClientIdentifier:@"com.apple.donotdisturb.control-center.module"];
+    }
+    [assertionService invalidateAllActiveModeAssertionsWithError:NULL];
+}
 
-@interface SBLockScreenManager
-
-+ (id)sharedInstance;
-- (void)setBiometricAutoUnlockingDisabled:(BOOL)arg1 forReason:(id)arg2 ;
-- (_Bool)unlockUIFromSource:(int)arg1 withOptions:(id)arg2;
-
-@end
-
-@interface SBAirplaneModeController
-
-+ (id)sharedInstance;
-- (BOOL)isInAirplaneMode;
-- (void)setInAirplaneMode:(BOOL)arg1 ;
-
-@end
-
-@interface SBSleepWakeHardwareButtonInteraction
-
-- (void)_performSleep;
-- (void)_performWake;
-
-@end
-
-@interface SBTapToWakeController
-
-- (void)setScreenOff:(BOOL)arg1 ;
-- (BOOL)shouldTapToWake;
-
-@end
-
-@interface SBLiftToWakeController
-
-- (void)removeObserver:(id)arg1;
-+ (id)sharedController;
-- (void)_screenTurnedOff;
-- (void)_stopObservingIfNecessary;
-
-@end
-
-@interface SBUIController
-
-- (id)init;
-- (BOOL)isOnAC;
-+ (id)sharedInstance;
-- (void)updateBatteryState:(id)arg1 ;
-- (void)_deviceUILocked;
-- (void)setChargingChimeEnabled:(BOOL)arg1 ;
-
-@end
-
-@interface SBHomeHardwareButton
-
-- (void)setHapticType:(long long)arg1 ;
-
-@end
-
-@interface _UIStatusBarStringView : UILabel
-
-- (void)setText:(id)arg1 ;	
-- (void)setOriginalText:(NSString *)arg1 ;
-
-@end
-
+// spoof battery label to match shutdown
 %hook _UIStatusBarStringView
 
 - (void)setText:(id)arg1{
@@ -153,21 +51,6 @@ static DNDModeAssertionService *assertionService;
 }
 
 %end
-
-static void enableDND(){
-    if (!assertionService) {
-        assertionService = (DNDModeAssertionService *)[%c(DNDModeAssertionService) serviceForClientIdentifier:@"com.apple.donotdisturb.control-center.module"];
-    }
-    DNDModeAssertionDetails *newAssertion = [%c(DNDModeAssertionDetails) userRequestedAssertionDetailsWithIdentifier:@"com.apple.control-center.manual-toggle" modeIdentifier:@"com.apple.donotdisturb.mode.default" lifetime:nil];
-    [assertionService takeModeAssertionWithDetails:newAssertion error:NULL];
-}
-
-static void disableDND(){
-    if (!assertionService) {
-        assertionService = (DNDModeAssertionService *)[%c(DNDModeAssertionService) serviceForClientIdentifier:@"com.apple.donotdisturb.control-center.module"];
-    }
-    [assertionService invalidateAllActiveModeAssertionsWithError:NULL];
-}
 
 %group tweak
 
@@ -198,7 +81,7 @@ BOOL sentineletoggled = NO;
 - (void)updateBatteryState:(id)arg1 {
 
 	%orig;
-		
+
     UIDevice *myDevice = [UIDevice currentDevice];
     [myDevice setBatteryMonitoringEnabled:YES];
 
@@ -311,8 +194,6 @@ void Sentinel() {
     %orig;
 
 	if(sentineletoggled){
-        NSLog(@"kankerhomo");
-
 		dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0  * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
 
 			[(SpringBoard *)[%c(SpringBoard) sharedApplication] _simulateLockButtonPress];
