@@ -249,9 +249,7 @@ void Sentinel() {
     UIImageView *sentinellogo = [[UIImageView alloc] initWithImage:image];
     sentinellogo.alpha = 0.8;
     sentinellogo.frame = CGRectMake(0,0,50,50);
-    sentinellogo.center = CGPointMake([[UIScreen mainScreen] bounds].size.width / 2, 
-
-    [[UIScreen mainScreen] bounds].size.height / 2);
+    sentinellogo.center = CGPointMake([[UIScreen mainScreen] bounds].size.width / 2, [[UIScreen mainScreen] bounds].size.height / 2);
 	[window1 addSubview:sentinellogo];						 
 
     [rootwindow addSubview:window1];
