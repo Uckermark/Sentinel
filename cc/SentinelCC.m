@@ -5,7 +5,7 @@
 //Return the icon of your module here
 - (UIImage *)iconGlyph
 {
-	return [UIImage imageNamed:@"Icon" inBundle:[NSBundle bundleForClass:[self class]] compatibleWithTraitCollection:nil];
+	return [UIImage imageNamed:@"icon" inBundle:[NSBundle bundleForClass:[self class]] compatibleWithTraitCollection:nil];
 }
 
 //Return the color selection color of your module here

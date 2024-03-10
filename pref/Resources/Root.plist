@@ -8,7 +8,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Follow me!</string>
+			<string>Developed by (do not contact for support requests)</string>
 		</dict>
 
 		<dict>
@@ -20,11 +20,27 @@
 			<string>omegaluldev</string>
 		</dict>
 
+        <dict>
+			<key>cell</key>
+			<string>PSGroupCell</string>
+			<key>label</key>
+			<string>Rootless Update by</string>
+		</dict>
+
+        <dict>
+			<key>cellClass</key>
+			<string>HBTwitterCell</string>
+			<key>label</key>
+			<string>Uckermark</string>
+			<key>user</key>
+			<string>_Uckermark</string>
+		</dict>
+
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>There is also a cc toggle available.</string>
+			<string>There is also a cc toggle available</string>
 		</dict>
 
         <dict>
@@ -34,7 +50,7 @@
             <string>HBTintedTableCell</string>
             <key>label</key>
             <string>Manually trigger Sentinel</string>
-        	 <key>action</key>
+        	<key>action</key>
             <string>triggersent</string>
         </dict>
 
@@ -60,13 +76,11 @@
 			<string>com.megadev.sentinel</string>
 		</dict>
 
-
-
 		<dict>
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Spoof battery percent to match shutdown.</string>
+			<string>Spoof battery percent to match shutdown</string>
 		</dict>
 
 		<dict>
@@ -114,7 +128,7 @@
 			<key>cell</key>
 			<string>PSGroupCell</string>
 			<key>label</key>
-			<string>Checkout my other tweaks!</string>
+			<string>Check out MegaDev's other tweaks:</string>
 		</dict>
 
         <dict>
