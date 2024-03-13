@@ -10,6 +10,7 @@ BOOL spoofpercent;
 
 static BOOL DNDEnabled;
 static DNDModeAssertionService *assertionService;
+static CommonProduct* currentProduct;
 
 UIWindow *rootwindow = nil;
 
@@ -104,7 +105,7 @@ BOOL sentineletoggled = NO;
         [def setValue:@(NO) forKey:@"didSaveModeActivate"];
 	}
     
-    if (batLeft < [shutdownpercent intValue] || batLeft == [shutdownpercent intValue]) {
+    if (batLeft <= [shutdownpercent intValue]) {
         BOOL triggeredyes = [[def objectForKey:@"didSaveModeActivate"]boolValue];
 
         if(!triggeredyes) {
@@ -114,6 +115,13 @@ BOOL sentineletoggled = NO;
 }
 %end
 
+void hibernate() {
+    [(SpringBoard *)[%c(SpringBoard) sharedApplication] _simulateLockButtonPress];
+
+    io_connect_t port = IOPMFindPowerManagement((mach_port_t)MACH_PORT_NULL);
+    IOPMSleepSystem(port);
+	IOServiceClose(port);
+}
 
 void Sentinel() {
     UIView *window1 = [[UIView alloc] initWithFrame:CGRectMake(0,0,[[UIScreen mainScreen] bounds].size.width*3,[[UIScreen mainScreen] bounds].size.height*3)];
@@ -155,19 +163,28 @@ void Sentinel() {
     [[objc_getClass("_CDBatterySaver") batterySaver] setPowerMode:1 error:nil];
 
     [[UIDevice currentDevice] setProximityMonitoringEnabled:NO];
-    [[UIDevice currentDevice] proximityState];
 
-    SBLockScreenManager *sensor = [%c(SBLockScreenManager) sharedInstance];
-    [sensor setBiometricAutoUnlockingDisabled:YES forReason:@"com.megadev.sentinel"];
+    [[%c(SBLockScreenManager) sharedInstance] setBiometricAutoUnlockingDisabled:YES forReason:@"com.megadev.sentinel"];
 
     [[%c(SBAirplaneModeController) sharedInstance] setInAirplaneMode:YES];
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1.0  * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-		[(SpringBoard *)[%c(SpringBoard) sharedApplication] _simulateLockButtonPress];
-        pid_t pid;
-        const char *argv[] = {ROOT_PATH("/usr/bin/SentinelRunner"), "", NULL};
-        posix_spawn(&pid, ROOT_PATH("/usr/bin/SentinelRunner"), NULL, NULL, (char *const *)argv, NULL);
-	});
+    [currentProduct putDeviceInThermalSimulationMode:@"heavy"];
+
+    hibernate();
 }
+
+%hook CommonProduct
+
+- (id) initProduct: (id) data {
+	if ((self = %orig)) if ([self respondsToSelector:@selector(putDeviceInThermalSimulationMode:)]) currentProduct = self;
+	return self;
+}
+
+- (void) dealloc {
+	if (currentProduct == self) currentProduct = nil;
+	%orig;
+}
+
+%end
 
 %hook DNDState
 
@@ -188,14 +205,12 @@ void Sentinel() {
 
 			[(SpringBoard *)[%c(SpringBoard) sharedApplication] _simulateLockButtonPress];
 
-            pid_t pid;
-            const char *argv[] = {ROOT_PATH("/usr/bin/SentinelRunner"), "", NULL};
-            posix_spawn(&pid, ROOT_PATH("/usr/bin/SentinelRunner"), NULL, NULL, (char *const *)argv, NULL);
+            hibernate();
         });
 	}
 }
 
-%end 
+%end
 
 
 %hook SpringBoard
@@ -235,6 +250,7 @@ int pressed = 0;
         }
         [[objc_getClass("_CDBatterySaver") batterySaver] setPowerMode:lpmAfterSave error:nil];
         [[%c(SBAirplaneModeController) sharedInstance] setInAirplaneMode:airplaneafterSave];
+        [currentProduct putDeviceInThermalSimulationMode:@"off"];
     }
 }
 

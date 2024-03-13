@@ -1,6 +1,8 @@
 #import <Cephei/HBPreferences.h>
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <IOKit/IOKitLib.h>
+#import <IOKit/pwr_mgt/IOPMLib.h>
 #import <spawn.h>
 #import <rootless.h>
 
@@ -22,6 +24,7 @@
 @interface SpringBoard
 
 - (void)_simulateLockButtonPress;
+- (void)_simulateHomeButtonPress;
 - (void)_updateRingerState:(int)arg1 withVisuals:(BOOL)arg2 updatePreferenceRegister:(BOOL)arg3 ;
 
 @end
@@ -110,5 +113,11 @@
 
 - (void)setText:(id)arg1 ;	
 - (void)setOriginalText:(NSString *)arg1 ;
+
+@end
+
+@interface CommonProduct : NSObject
+
+- (void) putDeviceInThermalSimulationMode: (NSString *) simulationMode;
 
 @end
