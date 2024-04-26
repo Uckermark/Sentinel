@@ -250,7 +250,7 @@ int pressed = 0;
         }
         [[objc_getClass("_CDBatterySaver") batterySaver] setPowerMode:lpmAfterSave error:nil];
         [[%c(SBAirplaneModeController) sharedInstance] setInAirplaneMode:airplaneafterSave];
-        [currentProduct putDeviceInThermalSimulationMode:@"off"];
+        if (currentProduct) [currentProduct putDeviceInThermalSimulationMode:@"off"];
     }
 }
 
